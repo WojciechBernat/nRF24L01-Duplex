@@ -24,7 +24,7 @@
 byte timeOut = 16;    //dluzszy tim out -> zmienic typ danych na int
 
 /*          User Fucntions Prototypes     */
-long int dataMerge( int x, int y);
+uint16_t dataMerge( uint8_t x, uint8_t y);
 void pinToggle( uint16_t pin);
 
 RF24 radio(7, 8); // CE, CSN
@@ -64,7 +64,7 @@ void loop() {
 
   /* Sklejanie danych do wysłania */
   uint16_t DataAxis = dataMerge(axisX, axisY);
-  uint16_t DataSwitch = dataMerge( 0x00, swt);
+  uint16_t DataSwitch = dataMerge( 0x0, swt);
 
   while ((sendStateAxis == 0 && sendStateSwt == 0) || (timeOutCounter < timeOut ))
   {
