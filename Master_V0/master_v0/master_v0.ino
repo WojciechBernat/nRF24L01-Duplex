@@ -12,13 +12,17 @@
    Program dla urządzenia 'Master' - nadrzędne
 */
 
+/*           Libraries           */
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define LED 4
+/*          Declered Variables          */
+#define TxLED 4
+#define RxLED 6
+/*          User Variables              */
+byte timeOut = 16;    //dluzszy tim out -> zmienic typ danych na int
 
-byte timeOut = 255;    //dluzszy tim out -> zmienic typ danych na int
 RF24 radio(7, 8); // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
 boolean buttonState = 0;
@@ -40,29 +44,36 @@ void loop() {
   delay(5);
 
   /* Radio go on */
-  radio.stopListening();
+  radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while() 
   unsigned int axisX = analogRead(A1);  //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
   unsigned int axisY = analogRead(A0);  // - || -
   unsigned int swt  =  analogRead(A2);  // - || -
 
   /* Sklejanie danych do wysłania */  
-  DataAxis = dataMerge(axisX, axisY);
-  DataSwitch = dataMerge( 0x00, swt);
+  long int DataAxis = dataMerge(axisX, axisY);
+  long int DataSwitch = dataMerge( 0x00, swt);
 
-  // Wysyłanie danych
+  /* Wysyłanie danych */
   boolean sendState = 0;
-  timeOutCounter = 0;
-  while(sendState == 0 || timeOutCounter < timeOut )
+  byte timeOutCounter = 0;
+  byte TxLedCounter = 0;
+  
+  while((sendStateAxis == 0 && sendStateSwt == 0) || (timeOutCounter < timeOut ))
   {
-    sendState = radio.write(&DataAxis, sizeof(DataAxis);      //wysylanie danych oraz zwracanei stanu wyslania 
-    timOutCounter++;
+    sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania 
+    sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
+    timeOutCounter++;
+    /* Miejsce na kod do migania dioda gdy jest nadawanie */
+    // TxLED
   }
 
+  /* Powrot do odbierania */
   delay(5);
   radio.startListening();
-  
+  while (!radio.available())
+  {
+  radio.read(&buttonState, sizeof(buttonState));
 
-  
 }
 
 /* User Functions */
