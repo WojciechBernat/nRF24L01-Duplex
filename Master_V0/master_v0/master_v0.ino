@@ -25,7 +25,7 @@ byte timeOut = 16;    //dluzszy tim out -> zmienic typ danych na int
 
 /*          User Fucntions Prototypes     */
 long int dataMerge( int x, int y);
-void pinToggle( int pin);
+void pinToggle( uint16_t pin);
 
 RF24 radio(7, 8); // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
@@ -54,7 +54,7 @@ void loop() {
   boolean sendStateAxis = 0;  //
   boolean sendStateSwt = 0;   //
   byte timeOutCounter = 0;    // licznk time out
-  //byte TxLedCounter = 0;      // Do migania dioda
+  //byte TxLedCounter = 0;    // Do migania dioda
 
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
@@ -67,16 +67,17 @@ void loop() {
   {
     sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
     sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
-    pinToggle(TxLED); // TxLED toggle
-
+    pinToggle(TxLED);                                              // TxLED toggle
   }
 
   /* Powrot do odbierania */
+  int SlaveResponse = 0;
   delay(5);
   radio.startListening();
   while (!radio.available())
   {
-  //  radio.read(&buttonState, sizeof(buttonState));
+    radio.read(&SlaveResponse, sizeof(SlaveResponse));
+    pinToggle(RxLED);
   }
 }
 
@@ -93,7 +94,7 @@ long int dataMerge( int x, int y) {
 }
 
 //Funckja przelaczanai diody/pinu
-void pinToggle( int pin) {
+void pinToggle(uint16_t pin) {
     if (digitalRead(pin) == HIGH) {
       digitalWrite(pin, LOW);
     }
