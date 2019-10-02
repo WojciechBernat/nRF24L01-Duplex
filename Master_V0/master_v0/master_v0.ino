@@ -46,9 +46,12 @@ void setup() {
 void loop() {
   delay(5);
   /* Pomiary */
-  unsigned int axisX = analogRead(A1);  //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
-  unsigned int axisY = analogRead(A0);  // - || -
-  unsigned int swt  =  analogRead(A2);  // - || -
+  unsigned int MeasX = analogRead(A1);  //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
+  unsigned int MeasY = analogRead(A0);  // - || -
+  unsigned int MeasSwt =  analogRead(A2);  // - || -
+  uint8_t axisX = map(MeasX, 0, 1023, 0, 255);
+  uint8_t axisY = map(MeasY, 0, 1023, 0, 255);
+  uint8_t swt = map(MeasSwt, 0, 1023, 0, 255);
 
   /* Wysyłanie danych */
   boolean sendStateAxis = 0;  //
@@ -60,8 +63,8 @@ void loop() {
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
   /* Sklejanie danych do wysłania */
-  long int DataAxis = dataMerge(axisX, axisY);
-  long int DataSwitch = dataMerge( 0x00, swt);
+  uint16_t DataAxis = dataMerge(axisX, axisY);
+  uint16_t DataSwitch = dataMerge( 0x00, swt);
 
   while ((sendStateAxis == 0 && sendStateSwt == 0) || (timeOutCounter < timeOut ))
   {
@@ -86,9 +89,9 @@ void loop() {
 // Funkcja sklejania
 // Argumenty: x - liczba( 2 bajtowa) ustawiana na dwóch najstarszych bajtach,
 //           y - liczba (2 bajtowa) ustawiana na dwóhc najmłodszych bitach
-long int dataMerge( int x, int y) {
-  long int DataOut = 0x0000;
-  DataOut = x << 16;            // Przesunięcie wartości dla osi X na starsze bity
+uint16_t dataMerge( uint8_t x, uint8_t y) {
+  long int DataOut = 0x00;
+  DataOut = x << 8;            // Przesunięcie wartości dla osi X na starsze bity
   DataOut |= y;                // Dostawianie zmiennej tmp = 0x00(axisY) do 'dataOut'
   return DataOut;
 }
