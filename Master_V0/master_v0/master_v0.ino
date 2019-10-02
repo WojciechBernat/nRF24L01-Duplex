@@ -68,14 +68,13 @@ void loop() {
 /* User Functions */
 
 // Funkcja sklejania
-//Argumenty: x - liczba( 2 bajtowa) ustawiana na dwóch najstarszych bajtach, 
+// Argumenty: x - liczba( 2 bajtowa) ustawiana na dwóch najstarszych bajtach, 
 //           y - liczba (2 bajtowa) ustawiana na dwóhc najmłodszych bitach
 long int dataMerge( int x, int y) {
   
-  long int DataOut = x << 16;    // Przesunięcie wartości dla osi X na starsze bity
-  DataOut &= 0x0000;             // Czyszczenie mlodszych bitow - dla pewnosci
-  long int tmp = 0x0000 | y;     // tymczasowa zmienan tmp do przetrzymania 4 bajtowej zmienne 'y'     
-  DataOut |= tmp;                // Dostawianie zmiennej tmp = 0x00(axisY) do 'dataOut'
+  long int DataOut = 0x0000;
+  DataOut = x << 16;            // Przesunięcie wartości dla osi X na starsze bity
+  DataOut |= y;                // Dostawianie zmiennej tmp = 0x00(axisY) do 'dataOut'
 
   return DataOut;
   
