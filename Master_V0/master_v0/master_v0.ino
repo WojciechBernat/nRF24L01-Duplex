@@ -72,7 +72,6 @@ void loop() {
   while ((sendState == 0 ) || (timeOutCounter < timeOut ))
   {
     //    sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
-    //    sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
     pinToggle(TxLED);                                              // TxLED toggle
   }
 
@@ -95,8 +94,12 @@ void dataLoad( uint8_t *buf, uint8_t *data) {
   uint8_t bufferSize = sizeof(buf);
   uint8_t dataSize = sizeof(data);
   if (dataSize < bufferSize) {
-    for (int i = 0 ; i <= dataSize; i++) {
-        buf[i] = data[i];
+    uint8_t i;
+    for (i = 0 ; i < dataSize; i++) {
+      buf[i] = data[i];     //przepisywanie bufrow
+    }
+    if( i == dataSize) {  
+      buf[i] = 0;           //gdy i = dataSize => i = 3 - wstaw tam 0
     }
   }
 }
