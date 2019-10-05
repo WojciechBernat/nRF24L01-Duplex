@@ -33,8 +33,8 @@ static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
 /*          User Fucntions Prototypes     */
 void pinToggle( uint16_t pin);
 void bufferReset( uint8_t *buf);
-boolean positionMeasure(uint16_t  *buf, uint8_t analogPinsNum);
-void dataLoad( uint8_t *buf, uint8_t *data);  //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
+void dataLoad( uint8_t *buf, uint8_t *data);                       //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
+boolean positionMeasure(uint8_t  *buf, uint8_t analogPinsNum);    //Pomiar napiec oraz przeskalowanie na 8bitowe zmienne
 
 
 RF24 radio(7, 8); // CE, CSN
