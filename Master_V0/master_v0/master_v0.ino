@@ -20,23 +20,31 @@
 /*          Declered Variables          */
 #define TxLED 4
 #define RxLED 6
+
 /*          User Variables              */
-uint8_t timeOut = 16;    //dluzszy time out -> zmienic typ danych na int
+uint8_t timeOut = 16;    //dluzszy time out -> zmienic typ danych na uint16_t
 uint8_t TxBuffer[8];  //Bufor nadawczy 
 uint8_t RxBuffer[8];  //Bufor odbiorczy
+//uint8_t *TxBufPointer = TxBuffer;  //wskazniki do buforow
+//uint8_t *RxBufPointer = RxBuffer;
+const byte addresses[][6] = {"00001", "00002"};   //adresy strumieni przesyłu danych
 
 /*          User Fucntions Prototypes     */
-uint16_t dataMerge( uint8_t x, uint8_t y);
 void pinToggle( uint16_t pin);
+void bufferReset( uint8_t *buf);
+uint16_t dataMerge( uint8_t x, uint8_t y);
+
 
 RF24 radio(7, 8); // CE, CSN
-const byte addresses[][6] = {"00001", "00002"};
 
 void setup() {
   delay(5);
   pinMode(TxLED, OUTPUT);
   pinMode(RxLED, OUTPUT);
-  delay(5);
+  delay(1);
+  
+//zerowanie buforow Tx i Rx
+  
   /* Radio go on */
   radio.begin();
   radio.openWritingPipe(addresses[1]); // 00002
@@ -106,4 +114,12 @@ void pinToggle(uint16_t pin) {
     else {
       digitalWrite(pin, HIGH);
     }
+}
+
+//Funkcja resetowanai bufora
+void bufferReset( uint8_t *buf) {
+  uint8_t bufSize = sizeof(buf);            
+  for(uint8_t i = 0; i < bufSize; i++) {   
+    buf[i] = 0;
+  }
 }
