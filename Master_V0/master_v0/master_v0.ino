@@ -21,7 +21,9 @@
 #define TxLED 4
 #define RxLED 6
 /*          User Variables              */
-byte timeOut = 16;    //dluzszy tim out -> zmienic typ danych na int
+uint8_t timeOut = 16;    //dluzszy time out -> zmienic typ danych na int
+uint8_t TxBuffer[8];  //Bufor nadawczy 
+uint8_t RxBuffer[8];  //Bufor odbiorczy
 
 /*          User Fucntions Prototypes     */
 uint16_t dataMerge( uint8_t x, uint8_t y);
@@ -49,14 +51,14 @@ void loop() {
   unsigned int MeasX = analogRead(A1);  //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
   unsigned int MeasY = analogRead(A0);  // - || -
   unsigned int MeasSwt =  analogRead(A2);  // - || -
-  uint8_t axisX = map(MeasX, 0, 1023, 0, 255);
-  uint8_t axisY = map(MeasY, 0, 1023, 0, 255);
+  uint8_t axisX = map(MeasX, 0, 1023, 0, 255);    // Zmiana wartosci z 10bitowych na 8bitowe - takei beda wykorzystwane jako DC w sterowaniu silnikami
+  uint8_t axisY = map(MeasY, 0, 1023, 0, 255);    
   uint8_t swt = map(MeasSwt, 0, 1023, 0, 255);
 
   /* Wysyłanie danych */
   boolean sendStateAxis = 0;  //
   boolean sendStateSwt = 0;   //
-  byte timeOutCounter = 0;    // licznk time out
+  uint8_t timeOutCounter = 0;    // licznk time out
   //byte TxLedCounter = 0;    // Do migania dioda
 
   /* Radio go on */
