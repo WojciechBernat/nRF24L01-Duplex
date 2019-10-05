@@ -25,14 +25,12 @@
 uint8_t timeOut = 16;    //dluzszy time out -> zmienic typ danych na uint16_t
 uint8_t TxBuffer[8];  //Bufor nadawczy 
 uint8_t RxBuffer[8];  //Bufor odbiorczy
-//uint8_t *TxBufPointer = TxBuffer;  //wskazniki do buforow
-//uint8_t *RxBufPointer = RxBuffer;
 const byte addresses[][6] = {"00001", "00002"};   //adresy strumieni przesyłu danych
 
 /*          User Fucntions Prototypes     */
 void pinToggle( uint16_t pin);
 void bufferReset( uint8_t *buf);
-uint16_t dataMerge( uint8_t x, uint8_t y);
+uint16_t dataMerge( uint8_t x, uint8_t y, );  //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
 
 
 RF24 radio(7, 8); // CE, CSN
@@ -42,8 +40,9 @@ void setup() {
   pinMode(TxLED, OUTPUT);
   pinMode(RxLED, OUTPUT);
   delay(1);
-  
-//zerowanie buforow Tx i Rx
+
+  bufferReset(TxBuffer); //zerowanie buforow Tx i Rx
+  bufferReset(RxBuffer); 
   
   /* Radio go on */
   radio.begin();
@@ -56,27 +55,23 @@ void setup() {
 void loop() {
   delay(5);
   /* Pomiary */
-  unsigned int MeasX = analogRead(A1);  //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
-  unsigned int MeasY = analogRead(A0);  // - || -
-  unsigned int MeasSwt =  analogRead(A2);  // - || -
+  uint16_t MeasX = analogRead(A1);      //w zakresie 0 - 1024; 0 -0V; 1024 - 5V
+  uint16_t MeasY = analogRead(A0);     // - || -
+  uint16_t MeasSwt =  analogRead(A2);  // - || -
   uint8_t axisX = map(MeasX, 0, 1023, 0, 255);    // Zmiana wartosci z 10bitowych na 8bitowe - takei beda wykorzystwane jako DC w sterowaniu silnikami
   uint8_t axisY = map(MeasY, 0, 1023, 0, 255);    
   uint8_t swt = map(MeasSwt, 0, 1023, 0, 255);
 
   /* Wysyłanie danych */
-  boolean sendStateAxis = 0;  //
-  boolean sendStateSwt = 0;   //
-  uint8_t timeOutCounter = 0;    // licznk time out
-  //byte TxLedCounter = 0;    // Do migania dioda
+  boolean sendState = 0;      //Zmiany! Redukcja do jednej zmiennej stanu wysłania danych - sendState; Usuniecie sendStateSwt
+  uint8_t timeOutCounter = 0;     // licznk time out
 
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
   /* Sklejanie danych do wysłania */
-  uint16_t DataAxis = dataMerge(axisX, axisY);
-  uint16_t DataSwitch = dataMerge( 0x0, swt);
 
-  while ((sendStateAxis == 0 && sendStateSwt == 0) || (timeOutCounter < timeOut ))
+  while ((sendState == 0 ) || (timeOutCounter < timeOut ))
   {
     sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
     sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
