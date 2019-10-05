@@ -23,6 +23,7 @@
 
 /*          User Variables              */
 uint8_t timeOut = 16;    //dluzszy time out -> zmienic typ danych na uint16_t
+uint8_t TxBufferCounter = 0; //Licznik bajtow zaladowanych do TxBuffer
 uint8_t TxBuffer[8];  //Bufor nadawczy 
 uint8_t RxBuffer[8];  //Bufor odbiorczy
 const byte addresses[][6] = {"00001", "00002"};   //adresy strumieni przesyłu danych
@@ -30,7 +31,7 @@ const byte addresses[][6] = {"00001", "00002"};   //adresy strumieni przesyłu d
 /*          User Fucntions Prototypes     */
 void pinToggle( uint16_t pin);
 void bufferReset( uint8_t *buf);
-uint16_t dataMerge( uint8_t x, uint8_t y, );  //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
+void dataLoad( uint8_t *buf, uint8_t data, uint8_t *bufCounter);  //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
 
 
 RF24 radio(7, 8); // CE, CSN
@@ -73,8 +74,8 @@ void loop() {
 
   while ((sendState == 0 ) || (timeOutCounter < timeOut ))
   {
-    sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
-    sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
+//    sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
+//    sendStateSwt = radio.write(&DataSwitch, sizeof(DataSwitch));   //wysylanie danych przycisku -||-
     pinToggle(TxLED);                                              // TxLED toggle
   }
 
@@ -91,14 +92,15 @@ void loop() {
 
 /* User Functions */
 
-// Funkcja sklejania
-// Argumenty: x - liczba( 2 bajtowa) ustawiana na dwóch najstarszych bajtach,
-//           y - liczba (2 bajtowa) ustawiana na dwóhc najmłodszych bitach
-uint16_t dataMerge( uint8_t x, uint8_t y) {
-  long int DataOut = 0x00;
-  DataOut = x << 8;            // Przesunięcie wartości dla osi X na starsze bity
-  DataOut |= y;                // Dostawianie zmiennej tmp = 0x00(axisY) do 'dataOut'
-  return DataOut;
+// Funkcja ladowania danych do bufora
+//dataLoad wstawia uint8 data do uint buf, w zależnosci od bufCounter
+
+void dataLoad( uint8_t *buf, uint8_t data, uint8_t *bufCounter, uint8_t *endCounterFlag) {
+  if(bufCounter < sizeof(buf)) {
+      buf[bufCounter] = data;
+      bufCounter++; 
+  }
+
 }
 
 //Funckja przelaczanai diody/pinu
