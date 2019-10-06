@@ -67,12 +67,12 @@ void loop() {
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
   /* Wysyłanie danych */
-  boolean sendState = 0;           //Zmiany! Redukcja do jednej zmiennej stanu wysłania danych - sendState; Usuniecie sendStateSwt
+  boolean sendState = false;      //Zmiany! Redukcja do jednej zmiennej stanu wysłania danych - sendState; Usuniecie sendStateSwt
   uint8_t timeOutCounter = 0;     // licznk time out
-  while ((sendState == 0 ) || (timeOutCounter < timeOut ))
+  while ((sendState == false) || (timeOutCounter < timeOut ))
   {
-    //    sendStateAxis = radio.write(&DataAxis, sizeof(DataAxis));      //wysylanie danych polozenia osi oraz zwracanie stanu wyslania
-    pinToggle(TxLED);                                              // TxLED toggle
+    sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
+    pinToggle(TxLED);                                          // TxLED toggle
   }
 
   /* Powrot do odbierania */
