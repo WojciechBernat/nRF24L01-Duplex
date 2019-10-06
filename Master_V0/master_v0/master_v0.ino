@@ -25,7 +25,7 @@
 uint8_t timeOut = 16;              //Dluzszy time out -> zmienic typ danych na uint16_t
 uint8_t MeasBuffer[3];            //Bufor pomiarowy
 uint8_t TxBuffer[4];               //Bufor nadawczy
-uint8_t RxBuffer[4];               //Bufor odbiorczy
+uint8_t RxBuffer[8];               //Bufor odbiorczy
 
 const uint8_t addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
 static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
@@ -76,12 +76,11 @@ void loop() {
   }
 
   /* Powrot do odbierania */
-  int SlaveResponse = 0;
   delay(5);
   radio.startListening();
   while (!radio.available())
   {
-    radio.read(&SlaveResponse, sizeof(SlaveResponse));
+    radio.read(&RxBuffer, sizeof(RxBuffer));
     pinToggle(RxLED);
   }
 }
