@@ -11,7 +11,7 @@
 /*
    Program dla urządzenia 'Master' - nadrzędne
 */
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*           Libraries           */
 #include <SPI.h>
 #include <nRF24L01.h>
@@ -38,7 +38,7 @@ boolean positionMeasure(uint8_t  *buf, uint8_t analogPinsNum);    //Pomiar napie
 
 
 RF24 radio(7, 8); // CE, CSN
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
   delay(5);
   /* UART init */
@@ -71,9 +71,10 @@ void setup() {
   Serial.println("Rx pipe adress" + addresses[0] );
 
 }
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  delay(5);
+//Start of loop()
+  delay(2); //zmniejsze z 5 na 2
   /* Pomiary */
   positionMeasure(MeasBuffer, 3); //na 'sztynwo' ustawiona wartosc portow analogowych
   /* Sklejanie danych do wysłania */
@@ -81,25 +82,28 @@ void loop() {
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
-  /* Wysyłanie danych */
+  /* Zmienne warunku pętli while */
   boolean sendState = false;      //Zmiany! Redukcja do jednej zmiennej stanu wysłania danych - sendState; Usuniecie sendStateSwt
   uint8_t timeOutCounter = 0;     // licznk time out
+  /* Wysyłanie danych */
   while ((sendState == false) || (timeOutCounter < timeOut ))
   {
     sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
     pinToggle(TxLED);                                          // TxLED toggle
   }
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Powrot do odbierania */
-  delay(5);
+  delay(3);   //zmniejsze na 3
   radio.startListening();
   while (!radio.available())
   {
     radio.read(&RxBuffer, sizeof(RxBuffer));
     pinToggle(RxLED);
   }
-}
 
+//End of loop()
+}
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* User Functions */
 
 // Funkcja ladowania danych do bufora
