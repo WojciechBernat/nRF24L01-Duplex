@@ -41,19 +41,34 @@ RF24 radio(7, 8); // CE, CSN
 
 void setup() {
   delay(5);
+  /* UART init */
+  Serial.begin(9600);
+  delay(5);
+  Serial.println("Master V0 application."); //Start message 
+  delay(5)
+  Serial.println("UART correct initialization");
+  Serial.println("Speed 9600 baud");
+  /* Pins init */
   pinMode(TxLED, OUTPUT);
   pinMode(RxLED, OUTPUT);
-  delay(1);
-
+  Serial.println("Pins correct initialization");;
+  Serial.println("TxLED OUTPUT");
+  Serial.println("RxLED OUTPUT");
+  
+  /* Buffer cleaning */
   bufferReset(MeasBuffer);
   bufferReset(TxBuffer);    //zerowanie buforow Tx i Rx
   bufferReset(RxBuffer);
+  Serial.println("Buffers correct RESET");
 
   /* Radio go on */
   radio.begin();
   radio.openWritingPipe(addresses[1]); // 00002
   radio.openReadingPipe(1, addresses[0]); // 00001
   radio.setPALevel(RF24_PA_MIN);
+  Serial.println("Radio correct initialization");
+  Serial.println("Tx pipe adress" + addresses[1] );
+  Serial.println("Rx pipe adress" + addresses[0] );
 
 }
 
