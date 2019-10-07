@@ -27,7 +27,7 @@ uint8_t MeasBuffer[3];            //Bufor pomiarowy
 uint8_t TxBuffer[4];               //Bufor nadawczy
 uint8_t RxBuffer[8];               //Bufor odbiorczy
 
-const uint8_t addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
+const byte addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
 static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
 
 /*          User Fucntions Prototypes     */
@@ -45,7 +45,7 @@ void setup() {
   Serial.begin(9600);
   delay(5);
   Serial.println("Master V0 application."); //Start message 
-  delay(5)
+  delay(5);
   Serial.println("UART correct initialization");
   Serial.println("Speed 9600 baud");
   /* Pins init */
@@ -67,8 +67,8 @@ void setup() {
   radio.openReadingPipe(1, addresses[0]); // 00001
   radio.setPALevel(RF24_PA_MIN);
   Serial.println("Radio correct initialization");
-  Serial.println("Tx pipe adress" + addresses[1] );
-  Serial.println("Rx pipe adress" + addresses[0] );
+  Serial.println("Tx pipe adress: 00002");
+  Serial.println("Rx pipe adress: 00001");
 
 }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,15 +90,23 @@ void loop() {
   {
     sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
     pinToggle(TxLED);                                          // TxLED toggle
+    Serial.println("Data to send: X,Y axis position");         // Wrzucic w funkcje 
+    Serial.println(TxBuffer[0] + "," + TxBuffer[1]);
+    Serial.println("Data to send: switch position");
+    Serial.println(TxBuffer[2]);
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Powrot do odbierania */
   delay(3);   //zmniejsze na 3
   radio.startListening();
-  while (!radio.available())
+  while (!radio.available())      //Sprawdzenie czy jakieś bajty są do odczytania z bufora RX nRF24 - koniec pętli gdy nic nie ma do odczytu
   {
-    radio.read(&RxBuffer, sizeof(RxBuffer));
+    radio.read(&RxBuffer, sizeof(RxBuffer));    //Odczytanie z bufora RF
     pinToggle(RxLED);
+    Serial.println("Recieved Data");
+    for(uint8_t i = 0; i< sizeof(RxBuffer); i++){
+      Serial.println( " Recieved byte: " + RxBuffer[i]);
+    }
   }
 
 //End of loop()
