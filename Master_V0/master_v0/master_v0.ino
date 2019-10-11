@@ -11,7 +11,7 @@
 /*
    Program dla urządzenia 'Master' - nadrzędne
 */
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*           Libraries           */
 #include <SPI.h>
 #include <nRF24L01.h>
@@ -27,6 +27,8 @@ uint8_t MeasBuffer[3];            //Bufor pomiarowy
 uint8_t TxBuffer[4];               //Bufor nadawczy
 uint8_t RxBuffer[8];               //Bufor odbiorczy
 
+const uint8_t TxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Tx Pipes addresses
+const uint8_t RxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes addresses
 const byte addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
 static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
 
@@ -36,49 +38,60 @@ void bufferReset( uint8_t *buf);
 void dataLoad( uint8_t *buf, uint8_t *data);                       //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
 boolean positionMeasure(uint8_t  *buf, uint8_t analogPinsNum);    //Pomiar napiec oraz przeskalowanie na 8bitowe zmienne
 
+/*  UART print functions */
+void MeasBufferPrint(uint8_t *buf, uint8_t bufSize );
+void TxBufferPrint(uint8_t *buf, uint8_t bufSize );
+void RxBufferPrint(uint8_t *buf, uint8_t bufSize );
+void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *RxBufAddress, uint8_t RxSize);
 
 RF24 radio(7, 8); // CE, CSN
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
   delay(5);
   /* UART init */
   Serial.begin(9600);
   delay(5);
-  Serial.println("Master V0 application."); //Start message 
-  delay(5);
-  Serial.println("UART correct initialization");
-  Serial.println("Speed 9600 baud");
+  Serial.println("Master V0 application.\nUART correct initialization \nSpeed 9600 baud"); //Start message
   /* Pins init */
   pinMode(TxLED, OUTPUT);
   pinMode(RxLED, OUTPUT);
-  Serial.println("Pins correct initialization");;
-  Serial.println("TxLED OUTPUT");
-  Serial.println("RxLED OUTPUT");
+  Serial.println("Pins correct initialization \nTxLED OUTPUT \nRxLED OUTPUT");
+  delay(500);
   
-  /* Buffer cleaning */
+  /* Buffer cleaning and sending bufers's content*/
   bufferReset(MeasBuffer);
-  bufferReset(TxBuffer);    //zerowanie buforow Tx i Rx
+  MeasBufferPrint(MeasBuffer, sizeof(MeasBuffer));
+  bufferReset(TxBuffer);   
+  TxBufferPrint(TxBuffer, sizeof(TxBuffer));
   bufferReset(RxBuffer);
+  RxBufferPrint(RxBuffer, sizeof(RxBuffer));
+  delay(500);
   Serial.println("Buffers correct RESET");
 
   /* Radio go on */
   radio.begin();
-  radio.openWritingPipe(addresses[1]); // 00002
-  radio.openReadingPipe(1, addresses[0]); // 00001
+  radio.openWritingPipe(TxAddresses);     // 
+  radio.openReadingPipe(1, RxAddresses);  // 
   radio.setPALevel(RF24_PA_MIN);
-  Serial.println("Radio correct initialization");
-  Serial.println("Tx pipe adress: 00002");
-  Serial.println("Rx pipe adress: 00001");
+  RadioInitPrint(TxAddresses, sizeof(TxAddresses), RxAddresses, sizeof(RxAddresses));
+  //Serial.println("Radio correct initialization \nTx pipe adress: 00002 \nRx pipe adress: 00001");
 
 }
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
-//Start of loop()
-  delay(2); //zmniejsze z 5 na 2
+  //Start of loop()
+  delay(10000); //zmniejsze z 5 na 2
   /* Pomiary */
   positionMeasure(MeasBuffer, 3); //na 'sztynwo' ustawiona wartosc portow analogowych
+  Serial.println(MeasBuffer[0]);
+  Serial.println(MeasBuffer[1]);
+  Serial.println(MeasBuffer[2]);
   /* Sklejanie danych do wysłania */
   dataLoad(TxBuffer, MeasBuffer);
+  Serial.println(TxBuffer[0]);
+  Serial.println(TxBuffer[1]);
+  Serial.println(TxBuffer[2]);
+  Serial.println(TxBuffer[3]);
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
@@ -90,7 +103,7 @@ void loop() {
   {
     sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
     pinToggle(TxLED);                                          // TxLED toggle
-    Serial.println("Data to send: X,Y axis position");         // Wrzucic w funkcje 
+    Serial.println("Data to send: X,Y axis position");         // Wrzucic w funkcje
     Serial.println(TxBuffer[0] + "," + TxBuffer[1]);
     Serial.println("Data to send: switch position");
     Serial.println(TxBuffer[2]);
@@ -104,14 +117,14 @@ void loop() {
     radio.read(&RxBuffer, sizeof(RxBuffer));    //Odczytanie z bufora RF
     pinToggle(RxLED);
     Serial.println("Recieved Data");
-    for(uint8_t i = 0; i< sizeof(RxBuffer); i++){
+    for (uint8_t i = 0; i < sizeof(RxBuffer); i++) {
       Serial.println( " Recieved byte: " + RxBuffer[i]);
     }
   }
 
-//End of loop()
+  //End of loop()
 }
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* User Functions */
 
 // Funkcja ladowania danych do bufora
@@ -124,7 +137,7 @@ void dataLoad( uint8_t *buf, uint8_t *data) {
     for (i = 0 ; i < dataSize; i++) {
       buf[i] = data[i];     //przepisywanie bufrow
     }
-    if( i == dataSize) {  
+    if ( i == dataSize) {
       buf[i] = 0;           //gdy i = dataSize => i = 3 - wstaw tam 0
     }
   }
@@ -167,5 +180,65 @@ boolean positionMeasure(uint8_t  *buf, uint8_t analogPinsNum)  {
   else {
     return false;
 
+  }
+}
+
+void TxBufferPrint(uint8_t *buf, uint8_t bufSize ) {
+  Serial.print("TxBuffer size: \t");
+  Serial.print(bufSize);
+  Serial.print("\n");
+  Serial.print("TxBuffer \t");
+  for (int i = 0; i < bufSize; i++) {
+    Serial.print(buf[i]);
+    Serial.print("\t");
+    if (i == (bufSize - 1)) {
+      Serial.print("\n");
+    }
+  }
+
+}
+
+void RxBufferPrint(uint8_t *buf, uint8_t bufSize ) {
+
+  Serial.print("RxBuffer size: \t");
+  Serial.print(bufSize);
+  Serial.print("\n");
+  Serial.print("RxBuffer \t");
+  for (int i = 0; i < bufSize; i++) {
+    Serial.print(buf[i]);
+    Serial.print("\t");
+    if (i == (bufSize - 1)) {
+      Serial.print("\n");
+    }
+  }
+
+}
+
+void MeasBufferPrint(uint8_t *buf, uint8_t bufSize ) {
+  Serial.print("MeasBuffer size: \t");
+  Serial.print(bufSize);
+  Serial.print("\n");
+  Serial.print("MeasBuffer \t");
+  for (int i = 0; i < bufSize; i++) {
+    Serial.print(buf[i]);
+    Serial.print("\t");
+    if (i == (bufSize - 1)) {
+      Serial.print("\n");
+    }
+  }
+
+}
+
+void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *RxBufAddress, uint8_t RxSize) {
+  Serial.println("Radio correct initialization");
+  Serial.print("Tx pipe adress: \t");
+  for(int i = 0; i < TxSize; i++) {
+      Serial.print(TxBufAddress[i], HEX);
+      Serial.print("\t");
+  }
+  Serial.print("\nRx pipe adress: \t");
+    for(int i = 0; i < RxSize; i++) {
+      Serial.print(RxBufAddress[i], HEX);
+      Serial.print("\t");
   }
 }
