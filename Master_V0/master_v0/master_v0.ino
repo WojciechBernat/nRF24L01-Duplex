@@ -43,6 +43,7 @@ void MeasBufferPrint(uint8_t *buf, uint8_t bufSize );
 void TxBufferPrint(uint8_t *buf, uint8_t bufSize );
 void RxBufferPrint(uint8_t *buf, uint8_t bufSize );
 void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *RxBufAddress, uint8_t RxSize);
+void TxToSendPrint(uint8_t *buf, uint8_t bufSize);
 
 RF24 radio(7, 8); // CE, CSN
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@ void setup() {
   TxBufferPrint(TxBuffer, sizeof(TxBuffer));
   bufferReset(RxBuffer);
   RxBufferPrint(RxBuffer, sizeof(RxBuffer));
-  delay(500);
+  delay(5);
   Serial.println("Buffers correct RESET");
 
   /* Radio go on */
@@ -74,24 +75,18 @@ void setup() {
   radio.openReadingPipe(1, RxAddresses);  // 
   radio.setPALevel(RF24_PA_MIN);
   RadioInitPrint(TxAddresses, sizeof(TxAddresses), RxAddresses, sizeof(RxAddresses));
-  //Serial.println("Radio correct initialization \nTx pipe adress: 00002 \nRx pipe adress: 00001");
-
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
   //Start of loop()
-  delay(10000); //zmniejsze z 5 na 2
+  delay(10); //zmniejsze z 5 na 2
   /* Pomiary */
   positionMeasure(MeasBuffer, 3); //na 'sztynwo' ustawiona wartosc portow analogowych
-  Serial.println(MeasBuffer[0]);
-  Serial.println(MeasBuffer[1]);
-  Serial.println(MeasBuffer[2]);
+  MeasBufferPrint(MeasBuffer, sizeof(MeasBuffer));
+  
   /* Sklejanie danych do wysłania */
   dataLoad(TxBuffer, MeasBuffer);
-  Serial.println(TxBuffer[0]);
-  Serial.println(TxBuffer[1]);
-  Serial.println(TxBuffer[2]);
-  Serial.println(TxBuffer[3]);
+  TxBufferPrint(TxBuffer, sizeof(TxBuffer));
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
 
@@ -103,10 +98,7 @@ void loop() {
   {
     sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
     pinToggle(TxLED);                                          // TxLED toggle
-    Serial.println("Data to send: X,Y axis position");         // Wrzucic w funkcje
-    Serial.println(TxBuffer[0] + "," + TxBuffer[1]);
-    Serial.println("Data to send: switch position");
-    Serial.println(TxBuffer[2]);
+    TxToSendPrint(TxBuffer, sizeof(TxBuffer));
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Powrot do odbierania */
@@ -200,10 +192,9 @@ void TxBufferPrint(uint8_t *buf, uint8_t bufSize ) {
 
 void RxBufferPrint(uint8_t *buf, uint8_t bufSize ) {
 
-  Serial.print("RxBuffer size: \t");
+  Serial.print("\nRxBuffer size: \t");
   Serial.print(bufSize);
-  Serial.print("\n");
-  Serial.print("RxBuffer \t");
+  Serial.print("\nRxBuffer \t");
   for (int i = 0; i < bufSize; i++) {
     Serial.print(buf[i]);
     Serial.print("\t");
@@ -215,10 +206,9 @@ void RxBufferPrint(uint8_t *buf, uint8_t bufSize ) {
 }
 
 void MeasBufferPrint(uint8_t *buf, uint8_t bufSize ) {
-  Serial.print("MeasBuffer size: \t");
+  Serial.print("\nMeasBuffer size: \t");
   Serial.print(bufSize);
-  Serial.print("\n");
-  Serial.print("MeasBuffer \t");
+  Serial.print("\nMeasBuffer \t");
   for (int i = 0; i < bufSize; i++) {
     Serial.print(buf[i]);
     Serial.print("\t");
@@ -231,7 +221,7 @@ void MeasBufferPrint(uint8_t *buf, uint8_t bufSize ) {
 
 void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *RxBufAddress, uint8_t RxSize) {
   Serial.println("Radio correct initialization");
-  Serial.print("Tx pipe adress: \t");
+  Serial.print("\nTx pipe adress: \t");
   for(int i = 0; i < TxSize; i++) {
       Serial.print(TxBufAddress[i], HEX);
       Serial.print("\t");
@@ -241,4 +231,15 @@ void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *
       Serial.print(RxBufAddress[i], HEX);
       Serial.print("\t");
   }
+}
+
+void TxToSendPrint(uint8_t *buf, uint8_t bufSize) {
+    Serial.print("\nData to send; X,Y axis position: ");         
+    Serial.print(TxBuffer[0]);
+    Serial.print(" , ");
+    Serial.print(TxBuffer[1]);
+    Serial.print(" ; switch position: ");
+    Serial.print(TxBuffer[2]);
+    Serial.print(" , ");
+    Serial.print(TxBuffer[3]);
 }
