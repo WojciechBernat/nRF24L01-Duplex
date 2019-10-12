@@ -35,7 +35,7 @@ static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
 /*          User Fucntions Prototypes     */
 void pinToggle( uint16_t pin);
 void bufferReset( uint8_t *buf);
-void dataLoad( uint8_t *buf, uint8_t *data);                                   //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
+void dataLoad(uint8_t *buf, uint8_t bufSize, uint8_t *data, uint8_t dataSize);  //Oddanie argumentow //Zmiana dataMerge na funkcje wsadzajaca dane do TxBuffer
 boolean positionMeasure(uint8_t  *buf, uint8_t bufSize, uint8_t analogPins);    //Pomiar napiec oraz przeskalowanie na 8bitowe zmienne
 
 /*  UART print functions */
@@ -85,7 +85,7 @@ void loop() {
   MeasBufferPrint(MeasBuffer, sizeof(MeasBuffer));
 
   /* Sklejanie danych do wysłania */
-  dataLoad(TxBuffer, MeasBuffer);
+  dataLoad(TxBuffer, sizeof(TxBuffer), MeasBuffer, sizeof(MeasBuffer));
   TxBufferPrint(TxBuffer, sizeof(TxBuffer));
   /* Radio go on */
   radio.stopListening();                // Zastanowic sie czy nie przeniesc przed petle while()
@@ -124,7 +124,7 @@ boolean positionMeasure(uint8_t  *buf, uint8_t bufSize, uint8_t analogPins)  {
   if (analogPins <= bufSize) {
     for (int i = 0; i < analogPins; i++) {
       buf[i] = map(analogRead(i), 0, 1023, 0, 255); //Odczyt z i-tego pinu analogowego; remap z 10bitów na 8bitów; wstawienie do itej komórki bufora
-      Serial.println(buf[i]);    
+      Serial.println(buf[i]);
     }
     return true;    //Jezeli wykonano trzy iteracje (analogPin0, 1, 2) to zwróc true jako poprawnie wykonana funkcje
   }
@@ -133,26 +133,12 @@ boolean positionMeasure(uint8_t  *buf, uint8_t bufSize, uint8_t analogPins)  {
   }
 } //end of function
 
-/* Zakomentowano do testu innego kodu funkcji */
-// if (analogPins > 0) {
-//    for (int i = 0; i < analogPinsNum; i++) {
-//      buf[i] = map(analogPins[i], 0, 1023, 0, 255);
-//      Serial.println(buf[i]);
-//    }
-//    return true;
-//  }
-//  else {
-//    return false;
-//
-//  }
-
-
 // Funkcja ladowania danych do bufora
 // dataLoad wstawia uint8 data do uint buf, w zależnosci od bufCounter
-void dataLoad( uint8_t *buf, uint8_t *data) {
-  uint8_t bufferSize = sizeof(buf);
-  uint8_t dataSize = sizeof(data);
-  if (dataSize < bufferSize) {
+void dataLoad( uint8_t *buf, uint8_t bufSize, uint8_t *data, uint8_t dataSize) {  //dodanie do argumentow rozmiarow tablic
+//  uint8_t bufferSize = sizeof(buf); 
+//  uint8_t dataSize = sizeof(data);
+  if (dataSize < bufSize) {
     uint8_t i;
     for (i = 0 ; i < dataSize; i++) {
       buf[i] = data[i];     //przepisywanie bufrow
