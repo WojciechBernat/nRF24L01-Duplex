@@ -29,8 +29,8 @@ uint8_t RxBuffer[8];               //Bufor odbiorczy
 
 const uint8_t TxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Tx Pipes addresses
 const uint8_t RxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes addresses
-const byte addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
-static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
+//const byte addresses[][6] = {"00001", "00002"};            //adresy strumieni przesyłu danych
+//static const uint8_t analogPins[] = {A0, A1, A2, A3, A4};
 
 /*          User Fucntions Prototypes     */
 void pinToggle( uint16_t pin);
