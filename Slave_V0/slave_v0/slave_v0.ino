@@ -14,34 +14,52 @@
 
 //////////////////dodac wyrzucanie pomiarów na porcie szeregowym
 // w dekodowaniu uzyc lowByte, highByte
-// funkcje bitowe butRead, bitWrite, bit(), 
+// funkcje bitowe butRead, bitWrite, bit(),
 
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define LedGreen  5
-#define LedRed    4
-#define LedYellow 3
+#define BAUD  9600  //Default UART speed
+#define TxLED 9     //
+#define RxLED 10    //
 
+#define LED_GREEN  5   //Switch LED
+#define LED_RED    4   //Y axis LED
+#define LED_YELLOW 3   //X axis LED
+
+/* User Variables */
+String LD_G = "LED Green";
+String LD_R = "LED Red";
+String LD_Y = "LED Yellow";
 
 RF24 radio(7, 8); // CE, CSN
-const byte addresses[][6] = {"00001", "00002"};
-boolean buttonState = 0;
+const uint8_t RxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Rx Pipes addresses
+const uint8_t TxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes addresses
+
+/* User Function Prototypes */ 
+void pinsInitPrint(String pinNum, String Name); 
 
 void setup() {
+  Serial.begin(BAUD);
+  delay(5);
+  Serial.println("Slave V0 application. /nUART correct initialization \nSpeed 9600 baud");
 
-  pinMode(LedGreen, OUTPUT);      /*  Definiowania pinów do sterowania LEDs */
-  pinMode(LedRed,   OUTPUT);
-  pinMode(LedYellow, OUTPUT);
-  digitalWrite(LedGreen,  LOW);   /* ustawiamy stan niski */
-  digitalWrite(LedRed,    LOW);
-  digitalWrite(LedYellow, LOW);
-  pinMode(button, INPUT);
+  /* Pins init */
+  pinMode(LED_GREEN, OUTPUT);      /*  Definiowania pinów do sterowania LEDs */
+  pinMode(LED_RED,   OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  digitalWrite(LED_GREEN,  LOW);   /* ustawiamy stan niski */
+  digitalWrite(LED_RED ,    LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  /* Pins init com. ONLY to DEBUG! */
+  pinsInitPrint(String(LED_GREEN), LD_G);
+  pinsInitPrint(String(LED_RED), LD_R);
+  pinsInitPrint(String(LED_YELLOW), LD_Y);
 
   radio.begin();                                /* Radio go on */
-  radio.openWritingPipe(addresses[0]);        // Otwarcie strumienia do nadawania - adres 00001
-  radio.openReadingPipe(1, addresses[1]);     // Otwarcie strumienia do odbierania - adres 00002
+  radio.openWritingPipe(TxAddresses);        // Otwarcie strumienia do nadawania - adres 00001
+  radio.openReadingPipe(1, RxAddresses);     // Otwarcie strumienia do odbierania - adres 00002
   radio.setPALevel(RF24_PA_MIN);              // Low power of PowerAmp
 }
 
@@ -50,18 +68,25 @@ void loop() {
   radio.startListening();                     /* Zacznij odbierać */
   if ( radio.available()) {
     while (radio.available()) {
-      unsigned int axisX = 0;
-      unsigned int axisY = 0;
-      unsigned int swt   = 0;
-      
-      radio.read(&angleV, sizeof(angleV));
+//      unsigned int axisX = 0;
+//      unsigned int axisY = 0;
+//      unsigned int swt   = 0;
+
+    //  radio.read(&angleV, sizeof(angleV));    //zmienne do zmiany
     }
     delay(5);
     radio.stopListening();
 
 
     /* Odpowiedz zwrotna - klikniecie przycisku */
-    buttonState = digitalRead(button);
-    radio.write(&buttonState, sizeof(buttonState));
+    // DO ZMIANY!
+//    buttonState = digitalRead(button);
+//    radio.write(&buttonState, sizeof(buttonState));
   }
+}
+
+
+
+void pinsInitPrint(String pinNum, String Name) {
+  Serial.println("Correct initialization of pin " +  pinNum  + ":" + Name);
 }
