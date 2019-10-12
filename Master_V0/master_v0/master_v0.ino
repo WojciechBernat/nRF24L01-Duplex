@@ -44,6 +44,7 @@ void TxBufferPrint(uint8_t *buf, uint8_t bufSize );
 void RxBufferPrint(uint8_t *buf, uint8_t bufSize );
 void RadioInitPrint(const uint8_t *TxBufAddress, uint8_t TxSize, const uint8_t *RxBufAddress, uint8_t RxSize);
 void TxToSendPrint(uint8_t *buf, uint8_t bufSize);
+void RxReceivedPrint(uint8_t *buf, uint8_t bufSize);
 
 RF24 radio(7, 8); // CE, CSN
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ void setup() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
   //Start of loop()
-  delay(10); //zmniejsze z 5 na 2
+  delay(5); //zmniejsze z 5 na 2
   /* Pomiary */
   positionMeasure(MeasBuffer, sizeof(MeasBuffer) , 3); //na 'sztynwo' ustawiona wartosc portow analogowych
   MeasBufferPrint(MeasBuffer, sizeof(MeasBuffer));
@@ -102,16 +103,13 @@ void loop() {
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Powrot do odbierania */
-  delay(3);   //zmniejsze na 3
+  delay(5);   //zmniejsze na 3
   radio.startListening();
   while (!radio.available())      //Sprawdzenie czy jakieś bajty są do odczytania z bufora RX nRF24 - koniec pętli gdy nic nie ma do odczytu
   {
     radio.read(&RxBuffer, sizeof(RxBuffer));    //Odczytanie z bufora RF
     pinToggle(RxLED);
-    Serial.println("Recieved Data");            //wrzucic do funkcji
-    for (uint8_t i = 0; i < sizeof(RxBuffer); i++) {
-      Serial.println( " Recieved byte: " + RxBuffer[i]);
-    }
+    RxReceivedPrint(RxBuffer, sizeof(RxBuffer));  //Wysylanie na port szeregowy odebranych danych
   }
 
   //End of loop()
@@ -136,8 +134,8 @@ boolean positionMeasure(uint8_t  *buf, uint8_t bufSize, uint8_t analogPins)  {
 // Funkcja ladowania danych do bufora
 // dataLoad wstawia uint8 data do uint buf, w zależnosci od bufCounter
 void dataLoad( uint8_t *buf, uint8_t bufSize, uint8_t *data, uint8_t dataSize) {  //dodanie do argumentow rozmiarow tablic
-//  uint8_t bufferSize = sizeof(buf); 
-//  uint8_t dataSize = sizeof(data);
+  //  uint8_t bufferSize = sizeof(buf);
+  //  uint8_t dataSize = sizeof(data);
   if (dataSize < bufSize) {
     uint8_t i;
     for (i = 0 ; i < dataSize; i++) {
@@ -242,4 +240,11 @@ void TxToSendPrint(uint8_t *buf, uint8_t bufSize) {
   Serial.print(TxBuffer[2]);
   Serial.print(" , ");
   Serial.print(TxBuffer[3]);
+}
+
+void RxReceivedPrint(uint8_t *buf, uint8_t bufSize) {
+  Serial.println("Recieved Data");            //wrzucic do funkcji
+  for (uint8_t i = 0; i < sizeof(RxBuffer); i++) {
+    Serial.println( " Recieved byte: " + RxBuffer[i]);
+  }
 }
