@@ -33,12 +33,14 @@ String LD_G = "LED Green";
 String LD_R = "LED Red";
 String LD_Y = "LED Yellow";
 
-RF24 radio(7, 8); // CE, CSN
+uint8_t RxBuffer[8];
 const uint8_t RxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Rx Pipes addresses
 const uint8_t TxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes addresses
 
 /* User Function Prototypes */ 
 void pinsInitPrint(String pinNum, String Name); 
+
+RF24 radio(7, 8); // CE, CSN
 
 void setup() {
   Serial.begin(BAUD);
@@ -52,6 +54,7 @@ void setup() {
   digitalWrite(LED_GREEN,  LOW);   /* ustawiamy stan niski */
   digitalWrite(LED_RED ,    LOW);
   digitalWrite(LED_YELLOW, LOW);
+  
   /* Pins init com. ONLY to DEBUG! */
   pinsInitPrint(String(LED_GREEN), LD_G);
   pinsInitPrint(String(LED_RED), LD_R);
@@ -60,19 +63,17 @@ void setup() {
   radio.begin();                                /* Radio go on */
   radio.openWritingPipe(TxAddresses);        // Otwarcie strumienia do nadawania - adres 00001
   radio.openReadingPipe(1, RxAddresses);     // Otwarcie strumienia do odbierania - adres 00002
-  radio.setPALevel(RF24_PA_MIN);              // Low power of PowerAmp
+  radio.setPALevel(RF24_PA_MIN);             // Low power of PowerAmp
+  Serial.println("Radio initialization correct\n");
 }
 
 void loop() {
   delay(5);
   radio.startListening();                     /* Zacznij odbierać */
-  if ( radio.available()) {
+  if (radio.available()) {
     while (radio.available()) {
-//      unsigned int axisX = 0;
-//      unsigned int axisY = 0;
-//      unsigned int swt   = 0;
-
-    //  radio.read(&angleV, sizeof(angleV));    //zmienne do zmiany
+    
+      radio.read(RxBuffer, sizeof(RxBuffer));    //zmienne do zmiany
     }
     delay(5);
     radio.stopListening();
