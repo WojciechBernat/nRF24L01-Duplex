@@ -33,6 +33,10 @@ String LD_G = "LED Green";
 String LD_R = "LED Red";
 String LD_Y = "LED Yellow";
 
+uint8_t xThreshold = 200; //X axis threshold value
+uint8_t yThreshold = 200; //Y threshold value 
+uint8_t sThreshold = 100; //Switch threshold value
+
 uint8_t RxBuffer[8];            //4 bytes , next change to 8
 uint8_t ExecBuffer[8];        //Executive Buffer 
 const uint8_t RxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Rx Pipes addresses
@@ -41,8 +45,8 @@ const uint8_t TxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes address
 /* User Function Prototypes */
 void pinsInitPrint(String pinNum, String Name);
 void bufferReset(uint8_t *buf);
-void bufferTransfer(uint8_t *data, uint8_t dataSize, uint8_t *buf, uint8_t bufSize) ;
-
+void bufferTransfer(uint8_t *data, uint8_t dataSize, uint8_t *buf, uint8_t bufSize);
+void thresholdToggle(uint8_t value, uint8_t threshold, uint8_t pin);
 
 RF24 radio(7, 8); // CE, CSN
 
@@ -83,12 +87,14 @@ void loop() {
       bufferReset(RxBuffer);                                                      //Czyszczenie bufora odbiorczego
     }
     delay(5);
+    
+    thresholdToggle( ExecBuffer[0], xThreshold, LED_YELLOW );
+    
+    /* Response */
     radio.stopListening();
 
-
+    
     /* Odpowiedz zwrotna - klikniecie przycisku */
-    // DO ZMIANY!
-    //    buttonState = digitalRead(button);
     //    radio.write(&buttonState, sizeof(buttonState));
   }
 }
@@ -115,6 +121,17 @@ void bufferTransfer(uint8_t *data, uint8_t dataSize, uint8_t *buf, uint8_t bufSi
   else {
     for (int i = 0; i < bufSize; i++ ) {
       buf[i] = data[i];
+    }
+  }
+}
+
+void thresholdToggle(uint8_t value, uint8_t threshold, uint8_t pin) {
+  if(value >= threshold) {      //threshold
+    if( pin == LOW ) {          
+      digitalWrite(pin, HIGH);  //Toggle
+    }
+    else {
+      digitalWrite(pin, LOW);   //Toggle
     }
   }
 }
