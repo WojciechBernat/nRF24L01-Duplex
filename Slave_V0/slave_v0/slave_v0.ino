@@ -29,6 +29,8 @@ RF24 radio(7, 8); // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
 boolean buttonState = 0;
 
+
+
 void setup() {
 
   pinMode(LedGreen, OUTPUT);      /*  Definiowania pinów do sterowania LEDs */
@@ -65,3 +67,6 @@ void loop() {
     radio.write(&buttonState, sizeof(buttonState));
   }
 }
+
+
+/* functions */
