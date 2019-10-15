@@ -95,11 +95,12 @@ void loop() {
   boolean sendState = false;      //Zmiany! Redukcja do jednej zmiennej stanu wysłania danych - sendState; Usuniecie sendStateSwt
   uint8_t timeOutCounter = 0;     // licznk time out
   /* Wysyłanie danych */
-  while ((sendState == false) || (timeOutCounter < timeOut ))
+  while ((sendState == true) || (timeOutCounter < timeOut ))
   {
     sendState = radio.write(&TxBuffer, sizeof(TxBuffer));      //Zmiana bufora na TxBuffer
     pinToggle(TxLED);                                          // TxLED toggle
     TxToSendPrint(TxBuffer, sizeof(TxBuffer));                 //Wysyanie na port szeregowy danych które sa wyyłane prze radio link
+    timeOutCounter++;
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Powrot do odbierania */
