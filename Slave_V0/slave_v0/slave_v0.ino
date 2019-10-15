@@ -51,6 +51,8 @@ boolean thresholdToggle(uint8_t value, uint8_t threshold, uint8_t pin);
 
 RF24 radio(7, 8); // CE, CSN
 
+
+
 void setup() {
   Serial.begin(BAUD);
   delay(5);
@@ -174,3 +176,6 @@ boolean thresholdToggle(uint8_t value, uint8_t threshold, uint8_t pin) {
     return false; //jezeli zmieni stan diody zwraca true, jezeli nie zmieni to zwraca false
   }
 }
+
+
+/* functions */
