@@ -99,30 +99,36 @@ void loop() {
     }
     else {
       Serial.println("Zmiana w osi X poniżej: " + ExecBuffer[0] + '\n');
+      TxBuffer[0] = 0x00;
     }
 
     if(thresholdToggle( ExecBuffer[1], yThreshold, LED_RED )){
       Serial.println("Zmiana w osi Y powyzej: " + ExecBuffer[1] + '\n');
+      TxBuffer[1] = 0x01;
     }
     else {
       Serial.println("Zmiana w osi Y poniżej: " + ExecBuffer[1] + '\n');
+      TxBuffer[1] = 0x00;
     }
 
     if(thresholdToggle( ExecBuffer[2], sThreshold, LED_GREEN )) {
       Serial.println("Zmiana przycisku powyzej: " + ExecBuffer[2] + '\n');
+      TxBuffer[2] = 0x01;
     }
     else {
       Serial.println("Zmiana przycisku poniżej: " + ExecBuffer[2] + '\n');
+      TxBuffer[2] = 0x00;
     }
 
     if (ExecBuffer[3] == 0x00) {
       bufferReset(RxBuffer);
+      TxBuffer[3] = 0x00;
     }
     /* End of Exec code */
 
     /* Response */
     radio.stopListening();
-    //radio.write(&buttonState, sizeof(buttonState));
+    radio.write(&TxBuffer, sizeof(TxBuffer));
   }
 }
 
