@@ -130,6 +130,7 @@ void loop() {
     radio.stopListening();
     radio.write(&TxBuffer, sizeof(TxBuffer));
   }
+  //Jezeli nie odebrano nic to nadaj: Nothing Receive
 }
 
 
