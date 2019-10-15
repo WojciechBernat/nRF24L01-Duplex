@@ -37,7 +37,8 @@ uint8_t xThreshold = 200; //X axis threshold value
 uint8_t yThreshold = 200; //Y threshold value
 uint8_t sThreshold = 100; //Switch threshold value
 
-uint8_t RxBuffer[8];            //4 bytes , next change to 8
+uint8_t RxBuffer[8];          //
+uint8_t TxBuffer[4];          //
 uint8_t ExecBuffer[8];        //Executive Buffer
 const uint8_t RxAddresses[] = {0xAA, 0xAA, 0xAA, 0xAA, 0x01}; //Rx Pipes addresses
 const uint8_t TxAddresses[] = {0xBB, 0xBB, 0xBB, 0xBB, 0x01}; //Tx Pipes addresses
@@ -76,6 +77,7 @@ void setup() {
   Serial.println("Radio initialization correct\n");
 
   bufferReset(RxBuffer);
+  bufferReset(TxBuffer);
 }
 
 void loop() {
@@ -91,13 +93,32 @@ void loop() {
     delay(5);
 
     /* Executive code */
-    thresholdToggle( ExecBuffer[0], xThreshold, LED_YELLOW );
-    thresholdToggle( ExecBuffer[1], yThreshold, LED_RED );
-    thresholdToggle( ExecBuffer[2], sThreshold, LED_GREEN );
+    if(thresholdToggle( ExecBuffer[0], xThreshold, LED_YELLOW )) {
+      Serial.println("Zmiana w osi X powyzej: " + ExecBuffer[0] + '\n');
+      TxBuffer[0] = 0x01;
+    }
+    else {
+      Serial.println("Zmiana w osi X poniżej: " + ExecBuffer[0] + '\n');
+    }
+
+    if(thresholdToggle( ExecBuffer[1], yThreshold, LED_RED )){
+      Serial.println("Zmiana w osi Y powyzej: " + ExecBuffer[1] + '\n');
+    }
+    else {
+      Serial.println("Zmiana w osi Y poniżej: " + ExecBuffer[1] + '\n');
+    }
+
+    if(thresholdToggle( ExecBuffer[2], sThreshold, LED_GREEN )) {
+      Serial.println("Zmiana przycisku powyzej: " + ExecBuffer[2] + '\n');
+    }
+    else {
+      Serial.println("Zmiana przycisku poniżej: " + ExecBuffer[2] + '\n');
+    }
 
     if (ExecBuffer[3] == 0x00) {
       bufferReset(RxBuffer);
     }
+    /* End of Exec code */
 
     /* Response */
     radio.stopListening();
@@ -143,6 +164,6 @@ boolean thresholdToggle(uint8_t value, uint8_t threshold, uint8_t pin) {
     }
   }
   else {
-    return false;
+    return false; //jezeli zmieni stan diody zwraca true, jezeli nie zmieni to zwraca false
   }
 }
