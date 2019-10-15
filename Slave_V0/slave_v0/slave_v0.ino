@@ -35,7 +35,7 @@ String LD_Y = "LED Yellow";
 
 uint8_t xThreshold = 200; //X axis threshold value
 uint8_t yThreshold = 200; //Y threshold value
-uint8_t sThreshold = 100; //Switch threshold value
+uint8_t sThreshold = 90; //Switch threshold value
 
 uint8_t RxBuffer[8];          //
 uint8_t TxBuffer[4];          //
@@ -83,7 +83,7 @@ void setup() {
 }
 
 void loop() {
-  delay(5);
+  delay(300);
   /* Receiver code */
   radio.startListening();
   if (radio.available()) {
@@ -92,33 +92,39 @@ void loop() {
       bufferTransfer(RxBuffer, sizeof(RxBuffer), ExecBuffer, sizeof(ExecBuffer));  //przepisanie do rejestru wykonawczego
       bufferReset(RxBuffer);                                                      //Czyszczenie bufora odbiorczego
     }
-    delay(5);
+    delay(300);
 
     /* Executive code */
     if(thresholdToggle( ExecBuffer[0], xThreshold, LED_YELLOW )) {
-      Serial.println("Zmiana w osi X powyzej: " + ExecBuffer[0] + '\n');
+      Serial.println("\nZmiana w osi X powyzej: "  /* + ExecBuffer[0] */ + '\n');
+      Serial.println(ExecBuffer[0]);
       TxBuffer[0] = 0x01;
     }
     else {
-      Serial.println("Zmiana w osi X poniżej: " + ExecBuffer[0] + '\n');
+      Serial.println("\nZmiana w osi X poniżej: "  /* + ExecBuffer[0] */ + '\n');
+      Serial.println(ExecBuffer[0]);
       TxBuffer[0] = 0x00;
     }
 
     if(thresholdToggle( ExecBuffer[1], yThreshold, LED_RED )){
-      Serial.println("Zmiana w osi Y powyzej: " + ExecBuffer[1] + '\n');
+      Serial.println("\nZmiana w osi Y powyzej: " /* + ExecBuffer[1] */ + '\n');
+      Serial.println(ExecBuffer[1]);
       TxBuffer[1] = 0x01;
     }
     else {
-      Serial.println("Zmiana w osi Y poniżej: " + ExecBuffer[1] + '\n');
+      Serial.println("\nZmiana w osi Y poniżej: "  /* + ExecBuffer[1] */ + '\n');
+      Serial.println(ExecBuffer[1]);
       TxBuffer[1] = 0x00;
     }
 
     if(thresholdToggle( ExecBuffer[2], sThreshold, LED_GREEN )) {
-      Serial.println("Zmiana przycisku powyzej: " + ExecBuffer[2] + '\n');
+      Serial.println("\nZmiana przycisku powyzej: " /* + ExecBuffer[2] */ + '\n');
+      Serial.println(ExecBuffer[2]);
       TxBuffer[2] = 0x01;
     }
     else {
-      Serial.println("Zmiana przycisku poniżej: " + ExecBuffer[2] + '\n');
+      Serial.println("\nZmiana przycisku poniżej: " /* + ExecBuffer[2] */ + '\n');
+      Serial.println(ExecBuffer[2]);
       TxBuffer[2] = 0x00;
     }
 
